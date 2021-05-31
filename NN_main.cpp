@@ -1,3 +1,8 @@
+/*
+* Author:tianzhi
+* Date:2021.5.31
+* version:v1.0
+*/
 #include <iostream>
 #include <Eigen/Dense>
 #include <math.h>
@@ -13,14 +18,14 @@
 using namespace Eigen;
 using namespace std;
 
-//Éñ¾­ÍøÂçµÄÕûÌå¼ÆËãÎª:
-//Z1 = W1^t*X + B1£¬ÕâÑùµÄ»°XÃ¿Ò»ÁĞÊÇÒ»ÌõÊı¾İ£¬ĞĞÊı£º10->5->1
+//ç¥ç»ç½‘ç»œçš„æ•´ä½“è®¡ç®—ä¸º:
+//Z1 = W1^t*X + B1ï¼Œè¿™æ ·çš„è¯Xæ¯ä¸€åˆ—æ˜¯ä¸€æ¡æ•°æ®ï¼Œè¡Œæ•°ï¼š10->5->1
 //A1 = f1(Z1)
 //Z2 = W2^t*A1 + B2
 //A2 = f2(Z2)
 
-MatrixXf Leak_ReLu(MatrixXf, float);//¼¤»îº¯Êı
-float MSE(MatrixXf, MatrixXf);//lossËğÊ§º¯Êı
+MatrixXf Leak_ReLu(MatrixXf, float);//æ¿€æ´»å‡½æ•°
+float MSE(MatrixXf, MatrixXf);//lossæŸå¤±å‡½æ•°
 
 class NN
 {
@@ -29,36 +34,36 @@ class NN
 		MatrixXf ForWard();
 		float BackWard();
 	private:
-		//Éñ¾­ÍøÂçµÄÊäÈëÖµ¡¢Êä³öµÄÕæÊµÖµ¡¢Ñ§Ï°ÂÊµÈ½ÏÎª¹Ì¶¨µÄÖµ
+		//ç¥ç»ç½‘ç»œçš„è¾“å…¥å€¼ã€è¾“å‡ºçš„çœŸå®å€¼ã€å­¦ä¹ ç‡ç­‰è¾ƒä¸ºå›ºå®šçš„å€¼
 		MatrixXf input;
 		MatrixXf y_true;
 		float alph;
-		//Éñ¾­ÍøÂç´ıÑ§Ï°²ÎÊı
+		//ç¥ç»ç½‘ç»œå¾…å­¦ä¹ å‚æ•°
 		MatrixXf W1_T;
 		MatrixXf B1;
 		MatrixXf W2_T;
 		MatrixXf B2;
-		//Éñ¾­ÍøÂçÖĞ¼ä²ÎÊı
+		//ç¥ç»ç½‘ç»œä¸­é—´å‚æ•°
 		MatrixXf Z1;       
 		MatrixXf A1;
 		MatrixXf Z2;
 		MatrixXf A2;//==out
-		//·´Ïò´«²¥ËùÓÃ²ÎÊı
+		//åå‘ä¼ æ’­æ‰€ç”¨å‚æ•°
 		MatrixXf dW2;
 		MatrixXf dB2;
 		MatrixXf dW1;
 		MatrixXf dB1;
-		//¶ÔLayer2ËùĞè²ÎÊı
+		//å¯¹Layer2æ‰€éœ€å‚æ•°
 		MatrixXf dJ_dA2;
 		MatrixXf dA2_dZ2;
 		MatrixXf dZ2_dW2;
 		MatrixXf dZ2_dB2;
-		//¶ÔLayer1ËùĞè²ÎÊı
+		//å¯¹Layer1æ‰€éœ€å‚æ•°
 		MatrixXf dZ2_dA1;
 		MatrixXf dA1_Z1;
 		MatrixXf dZ1_W1;
 };
-NN::NN(MatrixXf input, MatrixXf y_true, float alph)//³õÊ¼»¯È¨Öµ
+NN::NN(MatrixXf input, MatrixXf y_true, float alph)//åˆå§‹åŒ–æƒå€¼
 {
 	this->input = input;
 	this->y_true = y_true;
@@ -81,7 +86,7 @@ MatrixXf NN::ForWard()
 
 float NN::BackWard()
 {
-	int rows_temp, cols_temp;//ÁÙÊ±ĞĞÁĞ±äÁ¿
+	int rows_temp, cols_temp;//ä¸´æ—¶è¡Œåˆ—å˜é‡
 	//Abount Layer1 work start!!
 	this->dJ_dA2 = 2 * (this->A2 - this->y_true);
 	this->dA2_dZ2 = MatrixXf::Ones(this->Z2.rows(),this->Z2.cols());
@@ -112,7 +117,7 @@ float NN::BackWard()
 	this->dW1 = this->dA1_Z1.cwiseProduct(this->dZ2_dA1 * this->dJ_dA2.cwiseProduct(this->dA2_dZ2))*this->dZ1_W1 / DataNum;
 	this->dB1 = this->dA1_Z1.cwiseProduct(this->dZ2_dA1 * this->dJ_dA2.cwiseProduct(this->dA2_dZ2)) / DataNum;
 	//Abount Layer2 work end!!
-	//µ÷ÕûÑ§Ï°²ÎÊı
+	//è°ƒæ•´å­¦ä¹ å‚æ•°
 	this->W2_T = this->W2_T - this->alph*this->dW2;
 	this->W1_T = this->W1_T - this->alph*this->dW1;
 	this->B2 = this->B2 - this->alph*this->dB2;
@@ -140,7 +145,7 @@ MatrixXf Leak_ReLu(MatrixXf Z, float a)
 	return A;
 }
 
-float MSE(MatrixXf y_true, MatrixXf y_pred)//ËğÊ§º¯Êı
+float MSE(MatrixXf y_true, MatrixXf y_pred)//æŸå¤±å‡½æ•°
 {
 	MatrixXf true_pred = y_true - y_pred;
 	return true_pred.array().square().sum()/ true_pred.cols();
@@ -149,8 +154,8 @@ float MSE(MatrixXf y_true, MatrixXf y_pred)//ËğÊ§º¯Êı
 void main()
 {
 	MatrixXf input_data,y_true,y_pred;
-	int rows_temp,cols_temp;//ĞĞÁĞÊıÁÙÊ±±äÁ¿
-	int epch;//ÑµÁ·ÂÖÊıÁÙÊ±±äÁ¿
+	int rows_temp,cols_temp;//è¡Œåˆ—æ•°ä¸´æ—¶å˜é‡
+	int epch;//è®­ç»ƒè½®æ•°ä¸´æ—¶å˜é‡
 	int count_right = 0, count_error = 0;
 	input_data = MatrixXf::Random(InputShape, DataNum);
 	y_true = MatrixXf::Zero(Layer2_OutShape, DataNum);
@@ -181,7 +186,7 @@ void main()
 			count_error++;
 		}
 	}
-	cout <<"Ô¤²â×¼È·ÂÊÎª£º"<< count_right/(float)DataNum << endl;
+	cout <<"é¢„æµ‹å‡†ç¡®ç‡ä¸ºï¼š"<< count_right/(float)DataNum << endl;
 
 	system("pause");
 }
